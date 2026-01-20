@@ -39,7 +39,7 @@ export const listAttendanceSchema = resourceListSchemaFromZod(formatedAttendence
 export const listAttendanceQuerySearchSchema = z.object({
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().optional().default(10),
-  sort_by: z.string().optional().default("device_time"),
+  sort_by: z.string().optional().default("date"),
   sort_order: z.enum(["asc", "desc"]).optional().default("desc"),
   start_date: z.string().optional(),
   end_date: z.string().optional(),

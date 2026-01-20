@@ -31,7 +31,7 @@ export const employeeGroup = new OpenAPIHono<AppBindings>()
       undefined,
       [{ field: "createdAt", order: "desc" }],
       ["id","email","macAddress", "createdAt"],
-      BASE_CONDITION,
+      undefined,
       undefined,
       "createdAt"
     );
