@@ -18,26 +18,21 @@ const SEARCHABLE_FIELDS = ["id_value", "person_name"] as const;
 export const attendanceGroup = new OpenAPIHono<AppBindings>()
   .openapi(list, async (c) => {
     const filteringInput = c.req.valid("query");
-    const { start_date, end_date, search } = filteringInput;
+    const {from_date, to_date, search } = filteringInput;
 
     // Build WHERE conditions dynamically
     const conditions = [];
 
-    // Date range filtering - inclusive of both start and end dates (full 24 hours)
-    // If filtering 10-15, includes from 10th 00:00:00 to 15th 23:59:59
-    if (start_date) {
-      const startDateTime = new Date(start_date);
-      startDateTime.setHours(0, 0, 0, 0); // Start of the day
+    // Date range filtering - compare DATE parts directly (timezone safe)
+    if (from_date) {
       conditions.push(
-        gte(sql`${attendo.device_time}::timestamp`, startDateTime.toISOString())
+        gte(sql`DATE(${attendo.device_time})`, from_date)
       );
     }
 
-    if (end_date) {
-      const endDateTime = new Date(end_date);
-      endDateTime.setHours(23, 59, 59, 999); // End of the day
+    if (to_date) {
       conditions.push(
-        lte(sql`${attendo.device_time}::timestamp`, endDateTime.toISOString())
+        lte(sql`DATE(${attendo.device_time})`, to_date)
       );
     }
 
@@ -58,14 +53,14 @@ export const attendanceGroup = new OpenAPIHono<AppBindings>()
         row_id: sql<string>`MIN(${attendo.row_id})`.as("row_id"),
         id_value: sql<string>`${attendo.id_value}`.as("id_value"),
         person_name: sql<string>`MAX(${attendo.person_name})`.as("person_name"),
-        date: sql<string>`DATE(${attendo.device_time}::timestamp)`.as("date"),
-        entry_time: sql<string>`MIN(${attendo.device_time}::timestamp)`.as("entry_time"),
-        exit_time: sql<string>`CASE WHEN COUNT(*) > 1 THEN MAX(${attendo.device_time}::timestamp) ELSE NULL END`.as("exit_time"),
+        date: sql<string>`DATE(${attendo.device_time})`.as("date"),
+        entry_time: sql<string>`MIN(${attendo.device_time})`.as("entry_time"),
+        exit_time: sql<string>`CASE WHEN COUNT(*) > 1 THEN MAX(${attendo.device_time}) ELSE NULL END`.as("exit_time"),
       })
       .from(attendo)
       .where(whereCondition)
-      .groupBy(sql`DATE(${attendo.device_time}::timestamp)`, attendo.id_value)
-      .orderBy(sql`DATE(${attendo.device_time}::timestamp) DESC`);
+      .groupBy(sql`DATE(${attendo.device_time})`, attendo.id_value)
+      .orderBy(sql`DATE(${attendo.device_time}) DESC`);
 
     // Get total count for pagination
     const totalCount = formattedAttendance.length;
@@ -73,10 +68,11 @@ export const attendanceGroup = new OpenAPIHono<AppBindings>()
 
     return c.json({ success: true, data: formattedAttendance, pagination }, 200);
   })
+
   .openapi(list_by_mac, async (c) => {
     const filteringInput = c.req.valid("query");
     const { id } = c.req.valid("param");
-    const { start_date, end_date, search } = filteringInput;
+    const { from_date, to_date, search } = filteringInput;
 
     // Build WHERE conditions dynamically
     const conditions = [];
@@ -84,16 +80,16 @@ export const attendanceGroup = new OpenAPIHono<AppBindings>()
 
     // Date range filtering - inclusive of both start and end dates (full 24 hours)
     // If filtering 10-15, includes from 10th 00:00:00 to 15th 23:59:59
-    if (start_date) {
-      const startDateTime = new Date(start_date);
+    if (from_date) {
+      const startDateTime = new Date(from_date);
       startDateTime.setHours(0, 0, 0, 0); // Start of the day
       conditions.push(
         gte(sql`${attendo.device_time}::timestamp`, startDateTime.toISOString())
       );
     }
 
-    if (end_date) {
-      const endDateTime = new Date(end_date);
+    if (to_date) {
+      const endDateTime = new Date(to_date);
       endDateTime.setHours(23, 59, 59, 999); // End of the day
       conditions.push(
         lte(sql`${attendo.device_time}::timestamp`, endDateTime.toISOString())

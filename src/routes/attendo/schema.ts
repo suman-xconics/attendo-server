@@ -41,7 +41,7 @@ export const listAttendanceQuerySearchSchema = z.object({
   limit: z.coerce.number().int().positive().optional().default(10),
   sort_by: z.string().optional().default("date"),
   sort_order: z.enum(["asc", "desc"]).optional().default("desc"),
-  start_date: z.string().optional(),
-  end_date: z.string().optional(),
+  from_date: z.string().optional(),
+  to_date: z.string().optional(),
   search: z.string().optional(),
 })
