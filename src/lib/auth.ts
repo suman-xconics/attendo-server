@@ -45,7 +45,7 @@ export const auth = betterAuth({
               input: field.input,
               required: field.required,
             },
-          ])
+          ]),
         )
       : userFields,
   },
@@ -62,6 +62,16 @@ export const auth = betterAuth({
       enabled: true,
       maxAge: 5 * 60, // 5 minutes
       refreshCache: false,
+    },
+  },
+  cookies: {
+    sessionToken: {
+      options: {
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        path: "/",
+      },
     },
   },
   rateLimit: {
