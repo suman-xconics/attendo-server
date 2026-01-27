@@ -13,6 +13,7 @@ configureOpenAPI(app);
 app.get("/health", healthHandler({
   appName: env.APP_NAME,
   includeMetrics: true,
+  version: "0.0.1",
 }));
 
 // Mount protected routes
