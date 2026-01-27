@@ -93,9 +93,9 @@ export const auth = betterAuth({
   },
   advanced: {
     disableCSRFCheck: isDev,
-    useSecureCookies: !isDev,
     crossSubDomainCookies: {
       enabled: true,
+    
     },
     database: {
       generateId: () => generateRandomId(),
