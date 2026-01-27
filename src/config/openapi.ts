@@ -1,6 +1,6 @@
 import type { OpenAPIObjectConfigure } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
-import packageJSON from "#/package.json" with { type: "json" };
+import packageJSON from "#/package.json";
 import env from "@/env";
 import type { AppOpenAPI } from "@/types/app";
 import { auth } from "@/lib/auth";

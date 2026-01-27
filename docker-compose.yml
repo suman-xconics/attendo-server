@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      APP_NAME: "Attendo Server"
+      NODE_ENV: production
+      LOG_LEVEL: info
+      WHITELISTED_ORIGINS: "http://localhost:3000,http://localhost:8000,http://localhost:5173,http://localhost:4173"
+      BETTER_AUTH_SECRET: R20Xnuxow2ppagBK3xbyAkQVMyCaVy3p
+      BETTER_AUTH_URL: http://localhost:8000
+      BETTER_AUTH_API_PATH: auth
+      DATABASE_URL: postgresql://postgres.jjhokimrcfeoksgaejod:QhVOjg4LyvZmv1Ay@aws-1-ap-south-1.pooler.supabase.com:6543/postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
