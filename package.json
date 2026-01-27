@@ -15,7 +15,14 @@
     "db:generate": "npx drizzle-kit generate",
     "db:pull": "npx drizzle-kit pull",
     "db:studio": "npx drizzle-kit studio",
-    "clean": "git clean -xdf node_modules"
+    "clean": "git clean -xdf node_modules",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up",
+    "docker:up:detached": "docker compose up -d",
+    "docker:logs": "docker compose logs -f app",
+    "docker:down": "docker compose down",
+    "docker:restart": "docker compose restart",
+    "docker:clean": "docker compose down -v && docker system prune -f"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.8",
