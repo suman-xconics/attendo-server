@@ -30,7 +30,7 @@ export default function createApp() {
     .use(
       cors({
         origin: env.WHITELISTED_ORIGINS || [],
-        exposeHeaders: ["Content-Length", "X-Request-Id"],
+        exposeHeaders: ["Content-Length", "X-Request-Id","set-auth-token"],
         maxAge: 600,
         credentials: true,
         allowMethods: ["GET", "POST", "PUT", "DELETE", "PATCH"],

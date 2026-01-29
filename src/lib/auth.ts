@@ -2,13 +2,14 @@ import { db } from "@/db";
 import env from "@/env";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { createAuthMiddleware, openAPI } from "better-auth/plugins";
+import { bearer, createAuthMiddleware, openAPI } from "better-auth/plugins";
 import { UserFields, userFields } from "./fields/user";
 import { generateRandomId, generateUID } from "@/utils/gen-id";
 import { PasswordUtils } from "@/utils/password";
 import { eq } from "drizzle-orm";
-const isDev = env.NODE_ENV === "development";
 import * as authSchema from "@/db/schema/auth";
+
+const isDev = env.NODE_ENV === "development";
 
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
@@ -19,6 +20,8 @@ export const auth = betterAuth({
     provider: "pg",
     schema: authSchema,
   }),
+
+  // Enable email/password
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
@@ -28,67 +31,56 @@ export const auth = betterAuth({
         await PasswordUtils.verify(password, hash),
     },
   },
+
+  // Put Bearer plugin here
   plugins: [
+    bearer(),
     openAPI({
       disableDefaultReference: true,
       theme: "purple",
     }),
   ],
-  // Custom Fields
+
   user: {
     additionalFields: Array.isArray(userFields)
       ? Object.fromEntries(
-          userFields.map((field: UserFields) => [
-            field.name,
-            {
-              type: field.type,
-              input: field.input,
-              required: field.required,
-            },
-          ]),
-        )
+        userFields.map((field: UserFields) => [
+          field.name,
+          {
+            type: field.type,
+            input: field.input,
+            required: field.required,
+          },
+        ]),
+      )
       : userFields,
   },
+
   logger: {
     level: isDev ? "debug" : "info",
     disabled: false,
     disableColors: !isDev,
   },
+
   session: {
-    expiresIn: 604_800, // 7 days
-    updateAge: 86_400, // 1 day
-    storeSessionInDatabase: true,
+    expiresIn: 604_800,
+    updateAge: 86_400,
+    storeSessionInDatabase: false,
     cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60, // 5 minutes
-      refreshCache: false,
-    },
+      enabled: false,
+    }
   },
-  cookies: {
-    sessionToken: {
-      options: {
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        path: "/",
-      },
-    },
-  },
+
   rateLimit: {
     enabled: true,
-    window: 60, // KV minimum TTL is 60 seconds
-    max: 200, // requests per window
+    window: 60,
+    max: 200,
     customRules: {
-      "/sign-in/email": {
-        window: 60,
-        max: 20,
-      },
-      "/sign-up/email": {
-        window: 60,
-        max: 20,
-      },
+      "/sign-in/email": { window: 60, max: 20 },
+      "/sign-up/email": { window: 60, max: 20 },
     },
   },
+
   databaseHooks: {
     user: {
       create: {
@@ -101,11 +93,14 @@ export const auth = betterAuth({
       },
     },
   },
+
   advanced: {
     database: {
       generateId: () => generateRandomId(),
     },
+
   },
+
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
       const path = ctx.path;
@@ -134,6 +129,7 @@ export const auth = betterAuth({
           .where(eq(authSchema.user.id, userId))
           .limit(1);
 
+        // This ensures the returned user includes the full fields
         return { ...returned, user };
       }
 
